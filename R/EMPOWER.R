@@ -50,9 +50,9 @@ EMPOWER <- function(params = default_model_params(), directory = NULL) {
 
     # extract output files out_aux.txt, out_fluxes.txt, out_statevars.txt
     # (all headerless CSV files)
-    aux <- read.csv("out_aux.txt", header = FALSE)
-    fluxes <- read.csv("out_fluxes.txt", header = FALSE)
-    statevars <- read.csv("out_statevars.txt", header = FALSE)
+    aux <- tibble::as_tibble(read.csv("out_aux.txt", header = FALSE))
+    fluxes <- tibble::as_tibble(read.csv("out_fluxes.txt", header = FALSE))
+    statevars <- tibble::as_tibble(read.csv("out_statevars.txt", header = FALSE))
 
     # return all as a classed list
     structure(list(aux = aux, fluxes = fluxes, statevars = statevars, params = params),
