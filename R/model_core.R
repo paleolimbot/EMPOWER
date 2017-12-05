@@ -1,10 +1,21 @@
 
-#' Run the EMPOWER model
+#' Run the EMPOWER model core code
 #'
-#' @return Nothing (yet!)
+#' This function is a function-wrapped version of EMPOWER.r, originally
+#' distributed with Anderson et al. (2016). It returns nothing, instead writing
+#' three files to the working directory: "out_aux.txt", "out_fluxes.txt", and
+#' "out_statevars.txt". These files have no headers, and are actually
+#' comma-separaed-values files (i.e., read using \link[utils]{read.csv}). The
+#' function has been modified from the original to (1) not modify the global
+#' environment, (2) not print anything unless specified, and (3) allow some
+#' flexibility of inputs that would otherwise have to be specified by modifying
+#' the code.
+#'
 #' @export
 #'
-EMPOWER <- function() {
+#' @references Anderson et al. (2016)
+#'
+FNmodel_core <- function() {
 
   #################################################
   # --------------------------------------------- #
@@ -155,6 +166,10 @@ EMPOWER <- function() {
   MLD[1] <- MLD[366]           # note: position 1 in the array corresponds to t=0
   SST[1] <- SST[366]
 
+  # MLD and SST need to be global for the model to run
+  MLD <<- MLD
+  SST <<- SST
+
   ######################################################
   # -------------------------------------------------- #
   # Variables specific to model: adjust accordingly    #
@@ -188,11 +203,11 @@ EMPOWER <- function() {
   ndays <- nyears*365                          # no. of days in simulation
 
   nsteps <- floor(ndays/delta_t+delta_t/1000)                   # no. of time steps in simulation
-  nstepsday <- floor(1/delta_t+delta_t/1000)                    # no. of time steps per day
+  nstepsday <<- floor(1/delta_t+delta_t/1000)                    # no. of time steps per day
   nwrite <- flag_outfreq*(ndays+1)+(1-flag_outfreq)*(nsteps+1)  # no. of times required for output to files and graphs
 
   tm <- array(dim=c(nwrite), rep(0.0, times=nwrite))    # array to store time for output
-  flux <- matrix(0,nrow=nfluxmax,ncol=nSvar)            # matrix to hold update terms for state variables
+  flux <<- matrix(0,nrow=nfluxmax,ncol=nSvar)            # matrix to hold update terms for state variables
   fluxyear <- matrix(0,nrow=nfluxmax,ncol=nSvar)        # matrix to sum fluxes over year
   Svar <- matrix(nrow=nwrite, ncol=nSvar)               # matrix to store values of state variables
   Dvar <- matrix(nrow=nwrite, ncol=nDvar)               # matrix to store values of auxiliary variables
@@ -225,6 +240,8 @@ EMPOWER <- function() {
       daynow <<- iday                            # global variable to pass to functions
 
       for (istepnow in seq(1,nstepsday)) {       # loop over time steps within one day
+
+        istepnow <<- istepnow # istepnow is needed in FNget_flux()
 
         istep <- istep + 1
         istepplus <- istep+1               # (Dvar (auxiliary variables) stored at beginning of each time step)
